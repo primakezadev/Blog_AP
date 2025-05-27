@@ -1,4 +1,4 @@
-// blog.ts
+
 
 export interface BlogPost {
   id: number;

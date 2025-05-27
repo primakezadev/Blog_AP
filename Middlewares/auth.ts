@@ -1,10 +1,5 @@
-// auth.ts
-
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
@@ -12,19 +7,27 @@ export interface AuthRequest extends Request {
   user?: { userId: number; username: string };
 }
 
-export function authenticateToken(req: AuthRequest, res: Response, next: NextFunction) {
+export const authenticateToken = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): void => {
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Bearer <token>
+  const token = authHeader?.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ message: "Token required" });
+    res.status(401).json({ message: "No token provided" });
+    return;
   }
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as { userId: number; username: string };
-    req.user = payload;
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      userId: number;
+      username: string;
+    };
+    req.user = decoded;
     next();
-  } catch (err) {
-    return res.status(403).json({ message: "Invalid token" });
+  } catch (error) {
+    res.status(403).json({ message: "invalid or expired token" });
   }
-}
+};
