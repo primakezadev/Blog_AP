@@ -17,12 +17,12 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Welcome to Prima's Blog API");
 });
 
-// ✅ Auth Routes
+// Auth Routes
 app.use("/auth", authroutes);
 
 
 
-// ✅ Blog CRUD Routes
+//  Blog CRUD Routes
 app.use("/blogs", blogRoutes);
 
 AppDataSource.initialize()
