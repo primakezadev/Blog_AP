@@ -1,67 +1,77 @@
-import { NextFunction, Request, Response } from "express";
-import { blogPosts, Blog, generateBlogId } from "../entities/blog";
+import { Request, Response } from "express";
+import { Blog } from "../entities/blog";
+import { User } from "../entities/User";
+import { asyncHandler } from "../Middlewares/errorHandle";
+import { AuthRequest } from '../Middlewares/auth';
 
-// Create
-export const createBlog = (req: Request, res: Response) => {
-  const { title, content, author } = req.body;
+// ✅ Create Blog
+export const createBlog = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { title, content } = req.body;
 
-  if (!title || !content || !author) {
-     res.status(400).json({ message: "All fields required" });
+  if (!title || !content) {
+    return res.status(400).json({ message: "All fields are required" });
   }
 
-  const newBlog: Blog = {
-    id: generateBlogId(),
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const blog = Blog.create({
     title,
     content,
-    author
-  };
+    author: req.user,
+  });
 
-  blogPosts.push(newBlog);
-  res.status(201).json(newBlog);
-};
+  await blog.save();
+  res.status(201).json(blog);
+});
 
-// Read all
-export const getAllBlogs = (_req: Request, res: Response) => {
-  res.json(blogPosts);
-};
+// ✅ Get All Blogs
+export const getAllBlogs = asyncHandler(async (_req: Request, res: Response) => {
+  const blogs = await Blog.find({ relations: ["author"] });
+  res.json(blogs);
+});
 
-// Read one
-export const getBlogById = (req: Request, res: Response) => {
-  const id = parseInt(req.params.id);
-  const blog = blogPosts.find(b => b.id === id);
-  if (!blog)  res.status(404).json({ message: "Blog not found" });
+// ✅ Get Blog By ID
+export const getBlogById = asyncHandler(async (req: Request, res: Response) => {
+  const blog = await Blog.findOne({
+    where: { id: parseInt(req.params.id) },
+    relations: ["author"],
+  });
+
+  if (!blog) {
+    return res.status(404).json({ message: "Blog not found" });
+  }
 
   res.json(blog);
-};
+});
 
-// Update
-export const updateBlog = async (req: Request, res: Response,next:NextFunction):Promise<void> => {
+// ✅ Update Blog
+export const updateBlog = asyncHandler(async (req: Request, res: Response) => {
   const id = parseInt(req.params.id);
   const { title, content } = req.body;
-  try{
-  const blog = blogPosts.find(b => b.id === id);
 
-  if (!blog){
-res.status(404).json({ message: "Blog not found" });
-return;
-  } 
-
-  if (title) blog.title = title;
-  if (content) blog.content = content;
-
-  res.json(blog);
-  }catch(err:any){
-    res.status(500).json({error:err.message})
+  const blog = await Blog.findOneBy({ id });
+  if (!blog) {
+    return res.status(404).json({ message: "Blog not found" });
   }
-};
 
-// Delete
-export const deleteBlog = (req: Request, res: Response) => {
+  blog.title = title || blog.title;
+  blog.content = content || blog.content;
+
+  await blog.save();
+  res.json(blog);
+});
+
+// ✅ Delete Blog
+export const deleteBlog = asyncHandler(async (req: Request, res: Response) => {
   const id = parseInt(req.params.id);
-  const index = blogPosts.findIndex(b => b.id === id);
+  const blog = await Blog.findOneBy({ id });
 
-  if (index === -1)  res.status(404).json({ message: "Blog not found" });
+  if (!blog) {
+    return res.status(404).json({ message: "Blog not found" });
+  }
 
-  blogPosts.splice(index, 1);
+  await blog.remove();
   res.json({ message: "Blog deleted" });
-};
+});

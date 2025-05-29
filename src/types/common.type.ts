@@ -15,9 +15,11 @@
  export type UserRole = 'user' | 'admin';
 
  export interface ApiResponse<T = any> {
-   statusCode: number
-   success: boolean;
+  statusCode: number;
+  success: boolean;
   message: string;
-   data?: T;
-   errors?: Record<string, string[]>;
- }
+  data?: T;
+  errors?: Record<string, string[]>;
+}
+
+

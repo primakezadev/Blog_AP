@@ -5,15 +5,17 @@ import {
   getBlogById,
   updateBlog,
   deleteBlog,
-} from "../Controllers/Blogcontroller"; // Make sure the path and file name are correct
+} from "../Controllers/Blogcontroller";
 import { authenticateToken } from "../Middlewares/auth";
 
 const router = express.Router();
 
-router.post("/", createBlog);
+// 👇 Choose this only if auth is required to create a blog
+router.post("/", authenticateToken, createBlog);
+
 router.get("/", getAllBlogs);
 router.get("/:id", getBlogById);
-router.put("/:id", updateBlog);
-router.delete("/:id", deleteBlog);
-router.post("/", authenticateToken, createBlog);
+router.put("/:id", authenticateToken, updateBlog);
+router.delete("/:id", authenticateToken, deleteBlog);
+
 export default router;

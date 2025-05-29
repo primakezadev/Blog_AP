@@ -1,15 +1,9 @@
-import {
-  Entity,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import {Entity, Column, CreateDateColumn, UpdateDateColumn,PrimaryGeneratedColumn,  BaseEntity, } from 'typeorm';
 
 export type UserRole = 'user' | 'admin';
 
 @Entity('users') // ✅ table name in plural is a good convention
-export class User {
+export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 

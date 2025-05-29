@@ -2,11 +2,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts",
+    "dev-start": "ts-node src/index.ts",
     "build": "tsc",
     "watch": "tsc -w",
     "serve": "nodemon dist/index.js",
-    "dev:nodemon": "nodemon --exec ts-node src/index.ts",
+    "dev": "nodemon --exec ts-node src/index.ts",
     "typeorm": "ts-node ./node_modules/typeorm/cli.js -d src/config/db.ts",
     "migration:create": "typeorm migration:create",
     "migration:generate": "npm run typeorm -- migration:generate",

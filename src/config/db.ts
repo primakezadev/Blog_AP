@@ -14,8 +14,8 @@ export const AppDataSource = new DataSource({
   synchronize: process.env.NODE_ENV !== 'production',
   logging: process.env.NODE_ENV !== 'production',
   entities: [User],
-  migrations: ['src/migrations/*.ts'], // FIXED
-  subscribers: ['src/subscribers/*.ts'], // FIXED
+  migrations: ['src/migrations/*.ts'], 
+  subscribers: ['src/subscribers/*.ts'], 
 });
 
 export const initializeDatabase = async (): Promise<void> => {

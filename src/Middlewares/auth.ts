@@ -1,17 +1,18 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { User } from "../entities/User";
 
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
 export interface AuthRequest extends Request {
-  user?: { userId: number; username: string };
+  user?: User;
 }
 
-export const authenticateToken = (
+export const authenticateToken = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
-): void => {
+): Promise<void> => {
   const authHeader = req.headers["authorization"];
   const token = authHeader?.split(" ")[1];
 
@@ -25,7 +26,15 @@ export const authenticateToken = (
       userId: number;
       username: string;
     };
-    req.user = decoded;
+
+    const user = await User.findOneBy({ id: decoded.userId });
+
+    if (!user) {
+      res.status(403).json({ message: "User not found for token" });
+      return;
+    }
+
+    req.user = user;
     next();
   } catch (error) {
     res.status(403).json({ message: "invalid or expired token" });

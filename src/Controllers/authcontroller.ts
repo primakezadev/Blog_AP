@@ -14,3 +14,4 @@ export const login = asyncHandler(async (req: Request, res: Response<ApiResponse
   const result = await authService.login(req.body); // handles everything inside
   res.status(result.statusCode).json(result);
 });
+ 
