@@ -1,0 +1,18 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.nameSchema = exports.passwordSchema = exports.emailSchema = void 0;
+const zod_1 = require("zod");
+exports.emailSchema = zod_1.z
+    .string()
+    .email("Email form is not valid")
+    .max(100, "Email must be less than 100 characters");
+exports.passwordSchema = zod_1.z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(255, "Password must be less than 255 characters")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain at least one lowercase letter, one uppercase letter, and one number");
+exports.nameSchema = zod_1.z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(255, "Password must be less than 255 characters")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain at least one lowercase letter, one uppercase letter, and one number");
