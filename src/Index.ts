@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import blogRoutes from "./Routes/blogroutes"; 
 import authroutes from "./Routes/authroutes";
-import userRoutes from './Routes/userroutes'; // ✅ new
+import userRoutes from './Routes/userroutes'; 
 
 import { AppDataSource } from "./config/db";
 

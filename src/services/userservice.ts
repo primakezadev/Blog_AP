@@ -1,4 +1,4 @@
-import { User } from '../entities/User'; // Your TypeORM entity
+import { User } from '../entities/User'; 
 import { UpdateUserInput } from '../schemas/user.schema';
 import { ConflictError, NotFoundError } from '../Utils/errors';
 

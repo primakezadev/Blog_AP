@@ -14,7 +14,6 @@ export const createBlogService = async (
   const blog = Blog.create({
     title,
     content,
-    author: user,
   });
 
   return await blog.save();

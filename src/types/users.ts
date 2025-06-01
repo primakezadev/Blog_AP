@@ -2,8 +2,8 @@ export interface User {
   id: number;
   username: string;
   passwordHash: string;
-   resetToken?: string;
-  resetTokenExpiry?: number;
+   resetToken: string;
+  resetTokenExpiry: number;
 }
 
 

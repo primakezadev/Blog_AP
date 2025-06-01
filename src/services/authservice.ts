@@ -1,65 +1,133 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { ConflictError, UnauthorizedError } from '../Utils/errors';
+import { User } from '../entities/User';
+import { sendEmail } from '../Utils/sendemail';
 import { ApiResponse } from '../types/common.type';
+import { ConflictError, UnauthorizedError } from '../Utils/errors';
 
-const users: any[] = [];
-let userId = 1;
+const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+
+interface RegisterDTO {
+  name:string;
+  email: string;
+  password: string;
+}
+
+interface LoginDTO {
+  email: string;
+  password: string;
+}
 
 export class AuthService {
-  async register({ username, email, password }: any): Promise<ApiResponse> {
-    const exists = users.find(u => u.username === username || u.email === email);
-    if (exists) throw new ConflictError('Username or email already taken');
+  // Register user and send verification email
+  async register(data: RegisterDTO): Promise<ApiResponse> {
+    const existingUser = await User.findOneBy({ email: data.email });
+    if (existingUser) {
+      throw new ConflictError('Email is already in use');
+    }
 
-    const passwordHash = await bcrypt.hash(password, 10);
-    const newUser = { id: userId++, username, email, passwordHash };
-    users.push(newUser);
+    const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    const token = this.generateToken(newUser);
+    const user = new User();
+    user.name=data.name;
+    user.email = data.email;
+    user.password = hashedPassword;
+    user.isVerified = false;
+    await user.save();
+
+    const verificationToken = jwt.sign({ userId: user.id }, JWT_SECRET, {
+      expiresIn: '1h',
+    });
+
+    const verificationLink = `http://localhost:3000/api/auth/verify-email?token=${verificationToken}`;
+
+    await sendEmail(
+      user.email,
+      'Verify your email',
+      `Please click the link below to verify your email:${verificationLink}`
+    );
 
     return {
       statusCode: 201,
       success: true,
-      message: 'User registered successfully',
-      data: {
-        user: {
-          id: newUser.id,
-          username: newUser.username,
-          email: newUser.email
-        },
-        token
-      }
-    };
+      message: 'User registered successfully. Please check your email to verify your account.'
+    } satisfies ApiResponse;
   }
 
-  async login({ username, password }: any): Promise<ApiResponse> {
-    const user = users.find(u => u.username === username);
-    if (!user) throw new UnauthorizedError('Invalid username or password');
+  // Email verification
+  async verifyEmail(token: string): Promise<ApiResponse> {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
+      const user = await User.findOneBy({ id: decoded.userId });
 
-    const match = await bcrypt.compare(password, user.passwordHash);
-    if (!match) throw new UnauthorizedError('Invalid username or password');
+      if (!user) {
+        return {
+          statusCode: 404,
+          success: false,
+          message: 'User not found'
+        } satisfies ApiResponse;
+      }
 
-    const token = this.generateToken(user);
+      if (user.isVerified) {
+        return {
+          statusCode: 200,
+          success: true,
+          message: 'Email is already verified'
+        } satisfies ApiResponse;
+      }
+
+      user.isVerified = true;
+      await user.save();
+
+      return {
+        statusCode: 200,
+        success: true,
+        message: 'Email verified successfully'
+      } satisfies ApiResponse;
+    } catch (err) {
+      return {
+        statusCode: 400,
+        success: false,
+        message: 'Invalid or expired verification token'
+      } satisfies ApiResponse;
+    }
+  }
+
+  // User login
+  async login(data: LoginDTO): Promise<ApiResponse> {
+    const user = await User.findOneBy({ email: data.email });
+
+    if (!user || !(await bcrypt.compare(data.password, user.password))) {
+      throw new UnauthorizedError('Invalid email or password');
+    }
+
+    if (!user.isVerified) {
+      return {
+        statusCode: 403,
+        success: false,
+        message: 'Please verify your email before logging in'
+      } satisfies ApiResponse;
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
 
     return {
       statusCode: 200,
       success: true,
       message: 'Login successful',
-      data: {
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email
-        },
-        token
-      }
-    };
+      data: { token }
+    } satisfies ApiResponse;
   }
 
-  generateToken(user: { id: number, username: string, email: string }) {
+  // Optional: helper to generate any token
+  generateToken(user: { id: number; username?: string; email: string }) {
     return jwt.sign(
       { userId: user.id, username: user.username, email: user.email },
-      process.env.JWT_SECRET!,
+      JWT_SECRET,
       { expiresIn: '1h' }
     );
   }

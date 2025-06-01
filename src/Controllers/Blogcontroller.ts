@@ -1,10 +1,14 @@
 import { Request, Response } from "express";
+import { AppDataSource } from "../config/db";
 import { Blog } from "../entities/blog";
 import { User } from "../entities/User";
 import { asyncHandler } from "../Middlewares/errorHandle";
-import { AuthRequest } from '../Middlewares/auth';
+import { AuthRequest } from "../Middlewares/auth";
 
-// ✅ Create Blog
+// Get the Blog repository once
+const blogRepository = AppDataSource.getRepository(Blog);
+
+// Create Blog
 export const createBlog = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { title, content } = req.body;
 
@@ -16,25 +20,25 @@ export const createBlog = asyncHandler(async (req: AuthRequest, res: Response) =
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const blog = Blog.create({
+  const blog = blogRepository.create({
     title,
     content,
-    author: req.user,
+    author: req.user, // Make sure Blog has a 'ManyToOne' relationship with User
   });
 
-  await blog.save();
+  await blogRepository.save(blog);
   res.status(201).json(blog);
 });
 
-// ✅ Get All Blogs
+// Get All Blogs
 export const getAllBlogs = asyncHandler(async (_req: Request, res: Response) => {
-  const blogs = await Blog.find({ relations: ["author"] });
+  const blogs = await blogRepository.find({ relations: ["author"] });
   res.json(blogs);
 });
 
-// ✅ Get Blog By ID
+// Get Blog By ID
 export const getBlogById = asyncHandler(async (req: Request, res: Response) => {
-  const blog = await Blog.findOne({
+  const blog = await blogRepository.findOne({
     where: { id: parseInt(req.params.id) },
     relations: ["author"],
   });
@@ -46,12 +50,12 @@ export const getBlogById = asyncHandler(async (req: Request, res: Response) => {
   res.json(blog);
 });
 
-// ✅ Update Blog
+// Update Blog
 export const updateBlog = asyncHandler(async (req: Request, res: Response) => {
   const id = parseInt(req.params.id);
   const { title, content } = req.body;
 
-  const blog = await Blog.findOneBy({ id });
+  const blog = await blogRepository.findOneBy({ id });
   if (!blog) {
     return res.status(404).json({ message: "Blog not found" });
   }
@@ -59,19 +63,19 @@ export const updateBlog = asyncHandler(async (req: Request, res: Response) => {
   blog.title = title || blog.title;
   blog.content = content || blog.content;
 
-  await blog.save();
+  await blogRepository.save(blog);
   res.json(blog);
 });
 
-// ✅ Delete Blog
+// Delete Blog
 export const deleteBlog = asyncHandler(async (req: Request, res: Response) => {
   const id = parseInt(req.params.id);
-  const blog = await Blog.findOneBy({ id });
+  const blog = await blogRepository.findOneBy({ id });
 
   if (!blog) {
     return res.status(404).json({ message: "Blog not found" });
   }
 
-  await blog.remove();
+  await blogRepository.remove(blog);
   res.json({ message: "Blog deleted" });
 });

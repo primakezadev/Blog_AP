@@ -3,9 +3,9 @@ import { asyncHandler } from '../Middlewares/errorHandle';
 import { AuthenticatedRequest, ApiResponse } from '../types/common.type';
 import {
   UpdateUserInput,
-  // GetUserByIdInput, // ❌ You don’t need this if you're using `req.params.id`
-  // SearchUsersInput, // ❌ Same as above
-  // DeleteUserInput // ❌ Same as above
+  // GetUserByIdInput, //  You don’t need this if you're using `req.params.id`
+  // SearchUsersInput, //  Same as above
+  // DeleteUserInput //  Same as above
 } from '../schemas/user.schema';
 import { UserService } from '../services/userservice';
 

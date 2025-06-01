@@ -33,7 +33,7 @@ export class Blog extends BaseEntity {
   @Column('text')
   content!: string;
 
-  @ManyToOne(() => User, (user) => user.id)
+  @ManyToOne(() => User, (user) => user.blogs, { eager: false })
   author!: User;
 
   @CreateDateColumn()

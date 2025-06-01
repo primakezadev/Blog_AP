@@ -1,8 +1,8 @@
-import {Entity, Column, CreateDateColumn, UpdateDateColumn,PrimaryGeneratedColumn,  BaseEntity, } from 'typeorm';
-
+import {Entity, Column, CreateDateColumn, UpdateDateColumn,PrimaryGeneratedColumn,  BaseEntity,OneToMany } from 'typeorm';
+import { Blog} from "./blog"
 export type UserRole = 'user' | 'admin';
 
-@Entity('users') // ✅ table name in plural is a good convention
+@Entity('users')   
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -30,4 +30,7 @@ export class User extends BaseEntity {
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
+  @OneToMany(() => Blog, (blog) => blog.author)
+  blogs!: Blog[];
 }
