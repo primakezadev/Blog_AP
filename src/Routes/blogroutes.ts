@@ -11,7 +11,7 @@ import { Admin } from "typeorm";
 
 const router = express.Router();
 
-// 👇 Choose this only if auth is required to create a blog
+//  Choose this only if auth is required to create a blog
 router.post("/", authenticateToken, createBlog);
 
 router.get("/",getAllBlogs);
