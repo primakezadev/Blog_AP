@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
-import {User} from "../entities/User"
+import { User } from "../entities/User"
 import { Blog } from "../entities/blog";
 
 dotenv.config();

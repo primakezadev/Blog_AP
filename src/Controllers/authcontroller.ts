@@ -7,7 +7,7 @@ import { ApiResponse } from '../types/common.type';
 import { NotFoundError } from '../Utils/errors';
 import { sendResetPasswordEmail } from "../Utils/email";
 import { generateResetToken } from "../Utils/jwt";
-import { ForgotPasswordInput, ResetPasswordInput } from '../schemas/authschema';
+
 import { UserService } from '../services/userservice';
 
 const userService = new UserService();
